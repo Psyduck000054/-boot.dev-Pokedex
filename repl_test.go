@@ -1,0 +1,34 @@
+package main
+
+import (
+	"testing"
+)
+
+func TestCleanInput(t *testing.T) {
+	cases := []struct {
+		input    string
+		expected []string
+	}{
+		{
+			input:    "  hello  world  ",
+			expected: []string{"hello", "world"},
+		},
+		{
+			input:    "tom day MINH",
+			expected: []string{"tom", "day", "minh"},
+		},
+	}
+	for _, c := range cases {
+		actual := cleanInput(c.input)
+		if len(actual) != len(c.expected) {
+			t.Errorf("not the same length")
+		}
+		for i := range actual {
+			word := actual[i]
+			expectedWord := c.expected[i]
+			if word != expectedWord {
+				t.Errorf("wrong word at %dth index", i)
+			}
+		}
+	}
+}
