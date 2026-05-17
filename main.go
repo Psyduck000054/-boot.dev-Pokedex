@@ -2,16 +2,16 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
+	"pokedex/internal/pokeapi"
+	"time"
 )
 
 type config struct {
-	previous string
-	next     string
+	pokeClient *pokeapi.Client
+	previous   *string
+	next       *string
 }
 
 // ---------------------------------------------------------
@@ -42,106 +42,40 @@ mapb: Shows the previous page of in-game locations
 }
 
 func commandMap(c *config) error {
-	// 1. build URL
-	var url string
-
-	if c.next == "" {
-		url = "https://pokeapi.co/api/v2/location-area/"
-	} else {
-		url = c.next
-	}
-
-	// 2. send GET request
-	res, err := http.Get(url)
+	res, err := c.pokeClient.ListLocations(c.next)
 	if err != nil {
 		return err
 	}
 
-	defer res.Body.Close()
+	c.next = res.Next
+	c.previous = res.Previous
 
-	// 3. read response body
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return err
+	for _, loc := range res.Results {
+		fmt.Println(loc.Name)
 	}
-
-	// 4. unmarshal json into go structs
-	var mapRes mapResponse
-	err = json.Unmarshal(body, &mapRes)
-
-	// 5. extract the fields the command needs
-	for _, item := range mapRes.Results {
-		fmt.Println(item.Name)
-	}
-
-	// no c.previous case
-	if mapRes.Previous != nil {
-		c.previous = *mapRes.Previous
-	} else {
-		c.previous = ""
-	}
-
-	c.next = mapRes.Next
 
 	return nil
 }
 
 func commandMapb(c *config) error {
-	// 1. build URL
-	var url string
-
-	if c.previous == "" {
+	if c.previous == nil {
 		fmt.Println("you're on the first page")
 		return nil
-	} else {
-		url = c.previous
 	}
 
-	// 2. send GET request
-	res, err := http.Get(url)
+	res, err := c.pokeClient.ListLocations(c.previous)
 	if err != nil {
 		return err
 	}
 
-	defer res.Body.Close()
+	c.next = res.Next
+	c.previous = res.Previous
 
-	// 3. read response body
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return err
+	for _, loc := range res.Results {
+		fmt.Println(loc.Name)
 	}
-
-	// 4. unmarshal json into go structs
-	var mapRes mapResponse
-	err = json.Unmarshal(body, &mapRes)
-
-	// 5. extract the fields the command needs
-	for _, item := range mapRes.Results {
-		fmt.Println(item.Name)
-	}
-
-	// no c.previous case
-	if mapRes.Previous != nil {
-		c.previous = *mapRes.Previous
-	} else {
-		c.previous = ""
-	}
-
-	c.next = mapRes.Next
 
 	return nil
-}
-
-type result struct {
-	Name string `json:"name"`
-	Url  string `json:"url"`
-}
-
-type mapResponse struct {
-	Count    int      `json:"count"`
-	Next     string   `json:"next"`
-	Previous *string  `json:"previous"`
-	Results  []result `json:"results"`
 }
 
 // ---------------------------------------------------------
@@ -183,7 +117,11 @@ var commandList = map[string]cliCommand{
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
-	var c config
+	c := config{
+		pokeClient: pokeapi.NewClient(5*time.Second, 5*time.Second),
+		previous:   nil,
+		next:       nil,
+	}
 
 	for {
 		fmt.Print("Pokedex > ")
