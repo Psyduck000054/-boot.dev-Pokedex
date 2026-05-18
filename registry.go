@@ -7,7 +7,7 @@ package main
 type cliCommand struct {
 	name     string
 	desc     string
-	callback func(c *config) error
+	callback func(c *config, param1 string) error
 }
 
 var commandList = map[string]cliCommand{
@@ -30,5 +30,10 @@ var commandList = map[string]cliCommand{
 		name:     "mapb",
 		desc:     "List the locations of the previous page",
 		callback: commandMapb,
+	},
+	"explore": {
+		name:     "explore",
+		desc:     "List the Pokemons that can be encountered in an area",
+		callback: commandExplore,
 	},
 }

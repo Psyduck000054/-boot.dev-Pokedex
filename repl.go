@@ -18,6 +18,7 @@ func cleanInput(text string) []string {
 	return fArray
 }
 
+// start the repl system
 func replInit(c config) {
 	scanner := bufio.NewScanner(os.Stdin)
 
@@ -32,17 +33,32 @@ func replInit(c config) {
 		cleanedQuery := cleanInput(query)
 
 		if len(cleanedQuery) == 0 {
-			fmt.Print("invalid input")
+			fmt.Println("invalid input")
+			continue
 		}
 
 		command, exists := commandList[cleanedQuery[0]]
 		if exists {
-			err := command.callback(&c)
-			if err != nil {
-				fmt.Println(err)
+			if command.name != "explore" {
+				err := command.callback(&c, "")
+				if err != nil {
+					fmt.Println(err)
+				}
+			} else {
+				// explore take 2 params so we have to make sure the input has a length of at least 2
+				if len(cleanedQuery) < 2 {
+					fmt.Println("invalid input")
+					continue
+				}
+
+				area := cleanedQuery[1]
+				err := command.callback(&c, area)
+				if err != nil {
+					fmt.Println(err)
+				}
 			}
 		} else {
-			fmt.Print("Unknown command\n")
+			fmt.Println("Unknown command")
 		}
 	}
 }
