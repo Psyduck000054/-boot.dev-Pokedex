@@ -39,7 +39,7 @@ func replInit(c config) {
 
 		command, exists := commandList[cleanedQuery[0]]
 		if exists {
-			if command.name != "explore" {
+			if command.name != "explore" && command.name != "catch" {
 				err := command.callback(&c, "")
 				if err != nil {
 					fmt.Println(err)

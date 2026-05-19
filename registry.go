@@ -36,4 +36,9 @@ var commandList = map[string]cliCommand{
 		desc:     "List the Pokemons that can be encountered in an area",
 		callback: commandExplore,
 	},
+	"catch": {
+		name:     "catch",
+		desc:     "Attempt to catch a Pokemon!",
+		callback: commandCatch,
+	},
 }

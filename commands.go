@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 )
 
@@ -84,8 +85,8 @@ func commandMapb(c *config, useless0 string) error {
 // EXPLORE
 // ---------------------------------------------------------
 
-func commandExplore(c *config, area string) error {
-	pokeSlice, err := c.pokeClient.ListPokemons(area)
+func commandExplore(u *config, area string) error {
+	pokeSlice, err := u.pokeClient.ListPokemons(area)
 	if err != nil {
 		return err
 	}
@@ -95,6 +96,44 @@ func commandExplore(c *config, area string) error {
 
 	for index, pokemon := range pokeSlice.Results {
 		fmt.Printf("%d | %s\n", index+1, pokemon.Container.Name)
+	}
+
+	return nil
+}
+
+// ---------------------------------------------------------
+// CATCH
+// ---------------------------------------------------------
+
+func commandCatch(c *config, p string) error {
+	pokemon, err := c.pokeClient.PropertiesRetrieval(p)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Throwing a Pokeball at %s...\n", p)
+
+	// BaseXP of a Pokemon runs from 36-300
+	// The higher the BaseXP, the harder it is to catch
+	// Min catch rate i guess is 25%?
+
+	// f(36) = 1, f(300) = 0.25
+	// f(x) = ax + b
+
+	var catchRate float32
+	catchRate = float32(-1.0/352.0)*float32(pokemon.BaseXP) + float32(97.0/88.0)
+
+	fmt.Printf("Base XP: %d\n", pokemon.BaseXP)
+	fmt.Printf("[Catch rate: %f]\n", catchRate)
+
+	temp0 := rand.Float32()
+
+	if catchRate >= temp0 {
+		// caught
+		fmt.Printf("%s was caught!\n", p)
+	} else {
+		// escape
+		fmt.Printf("%s escaped!\n", p)
 	}
 
 	return nil

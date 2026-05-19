@@ -6,8 +6,6 @@ import (
 	"net/http"
 )
 
-const baseURL = "https://pokeapi.co/api/v2"
-
 func (c *Client) ListLocations(pageURL *string) (RespShallowLocations, error) {
 	var url string
 	// pick the URL
